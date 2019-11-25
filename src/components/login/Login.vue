@@ -25,21 +25,22 @@ export default {
     }
   },
   methods: {
-    handleToLogin () {
-      this.$http.post('/login', this.formData).then((res) => {
-        let status = res.data.meta.status
-        // 登录成功
-        if (status === 200) {
-          this.$router.push('/home')
-          this.$message.success(res.data.meta.msg)
-        } else {
-          this.$message.error(res.data.meta.msg)
-        }
-        // 1. 跳转首页
-        // 2. 提示登录成功
-        // 登录失败
-        // 1. 提醒失败原因
-      })
+    async handleToLogin () {
+      const res = await this.$http.post('/login', this.formData)
+      let status = res.data.meta.status
+      // 登录成功
+      if (status === 200) {
+        // 登录成功 保存token
+        localStorage.setItem('token', res.data.data.token)
+        this.$router.push('/home')
+        this.$message.success(res.data.meta.msg)
+      } else {
+        this.$message.error(res.data.meta.msg)
+      }
+      // 1. 跳转首页
+      // 2. 提示登录成功
+      // 登录失败
+      // 1. 提醒失败原因
     }
   }
 }
