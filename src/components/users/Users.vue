@@ -66,7 +66,7 @@
           <template slot-scope="scope">
             <el-row>
               <el-button plain size="mini" type="primary" icon="el-icon-edit" circle></el-button>
-              <el-button plain size="mini" type="danger" icon="el-icon-delete" circle></el-button>
+              <el-button plain size="mini" @click="showDeleUserMsgBox(scope.row.id)" type="danger" icon="el-icon-delete" circle></el-button>
               <el-button plain size="mini" type="success" icon="el-icon-check" circle></el-button>
             </el-row>
           </template>
@@ -209,6 +209,35 @@ export default {
       } else {
         this.$message.warning(msg)
       }
+    },
+    // 点击删除按钮,弹出对话框
+    showDeleUserMsgBox (userId) {
+      this.$confirm('此操作将删除该用户, 是否继续?', '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning',
+        center: true
+      }).then(async () => {
+        // 发送删除用户的请求
+        // eslint-disable-next-line no-unused-vars
+        const res = await this.$http.delete('/users/' + userId)
+        console.log(res)
+        if (res.data.meta.status === 200) {
+          this.pageNum = 1
+          // 更新视图
+          this.getUserList()
+          // 提示成功
+          this.$message({
+            type: 'success',
+            message: res.data.meta.msg
+          })
+        }
+      }).catch(() => {
+        this.$message({
+          type: 'info',
+          message: '已取消删除'
+        })
+      })
     }
   }
 }
