@@ -12,7 +12,7 @@
           <el-input @clear="loadUserList"  clearable placeholder="请输入用户名" @keyup.enter.native="searchUser" v-model="user" class="inputSearch">
             <el-button  @click="searchUser" slot="append" icon="el-icon-search"></el-button>
           </el-input>
-          <el-button type="success" class="addUser">添加用户</el-button>
+          <el-button type="success" class="addUser" @click="showAddUserDia">添加用户</el-button>
         </el-col>
       </el-row>
 <!--      3.表格-->
@@ -82,6 +82,29 @@
         layout="total, sizes, prev, pager, next, jumper"
         :total="total">
       </el-pagination>
+
+<!--      对话框-->
+<!--      1.添加用户的对话框-->
+      <el-dialog width="30%" title="添加用户" :visible.sync="dialogFormVisibleAdd">
+        <el-form class="e-form" :model="form">
+          <el-form-item label="用户名" label-width="70px">
+            <el-input v-model="form.username" autocomplete="off"></el-input>
+          </el-form-item>
+          <el-form-item label="密码" label-width="70px">
+            <el-input type="password" v-model="form.password" autocomplete="off"></el-input>
+          </el-form-item>
+          <el-form-item label="邮箱" label-width="70px">
+            <el-input v-model="form.email" autocomplete="off"></el-input>
+          </el-form-item>
+          <el-form-item label="电话" label-width="70px">
+            <el-input v-model="form.mobile" autocomplete="off"></el-input>
+          </el-form-item>
+        </el-form>
+        <div slot="footer" class="dialog-footer">
+          <el-button style="margin-right: 20px;" @click="dialogFormVisibleAdd = false">取 消</el-button>
+          <el-button type="primary" @click="addUser">确 定</el-button>
+        </div>
+      </el-dialog>
     </el-card>
 </template>
 
@@ -97,7 +120,16 @@ export default {
       pageSize: 2,
       total: 0,
       // 用户状态相关数据
-      value: true
+      value: true,
+      // 添加用户 对话框属性
+      dialogFormVisibleAdd: false,
+      // 添加用户的表单数据
+      form: {
+        username: '',
+        password: '',
+        email: '',
+        mobile: ''
+      }
     }
   },
   mounted () {
@@ -127,10 +159,11 @@ export default {
         // 2.total赋值
         this.total = total
         // 3.提示
-        this.$message.success(msg)
+        // this.$message.success(msg)
       } else {
         // 提示信息获取失败
-        this.$message.warning(msg)     }
+        this.$message.warning(msg)
+      }
     },
     // 分页方法
     handleSizeChange (val) {
@@ -152,6 +185,30 @@ export default {
     // 清空输入框， 重新加载用户数据
     loadUserList () {
       this.getUserList()
+    },
+    // 点击显示添加用户对话框
+    showAddUserDia () {
+      this.dialogFormVisibleAdd = true
+    },
+    // 点击确定,发送网络请求,添加用户
+    async addUser () {
+      const res = await this.$http.post('/users', this.form)
+      console.log(res)
+      // eslint-disable-next-line no-unused-vars,standard/object-curly-even-spacing
+      const { meta: { msg, status}, data} = res.data
+      if (status === 201) {
+        // 请求发送成功
+        // 1.提示添加成功
+        this.$message.success(msg)
+        // 2.关闭对话框
+        this.dialogFormVisibleAdd = false
+        // 3.更新视图
+        this.getUserList()
+        // 4.清空文本框
+        this.form = {}
+      } else {
+        this.$message.warning(msg)
+      }
     }
   }
 }
@@ -168,5 +225,8 @@ export default {
   }
   .addUser{
     margin-left: 20px;
+  }
+  .e-form{
+
   }
 </style>
