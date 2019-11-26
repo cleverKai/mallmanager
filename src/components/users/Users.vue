@@ -9,8 +9,8 @@
 <!--      2.搜索-->
       <el-row class="searchRow">
         <el-col>
-          <el-input placeholder="请输入用户名" v-model="user" class="inputSearch">
-            <el-button slot="append" icon="el-icon-search"></el-button>
+          <el-input @clear="loadUserList"  clearable placeholder="请输入用户名" @keyup.enter.native="searchUser" v-model="user" class="inputSearch">
+            <el-button  @click="searchUser" slot="append" icon="el-icon-search"></el-button>
           </el-input>
           <el-button type="success" class="addUser">添加用户</el-button>
         </el-col>
@@ -142,6 +142,15 @@ export default {
     handleCurrentChange (val) {
       console.log(`当前页: ${val}`)
       this.pageNum = val
+      this.getUserList()
+    },
+    // 搜索用户信息
+    searchUser () {
+      console.log('user')
+      this.getUserList()
+    },
+    // 清空输入框， 重新加载用户数据
+    loadUserList () {
       this.getUserList()
     }
   }
