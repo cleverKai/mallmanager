@@ -65,14 +65,23 @@
           label="操作">
           <template slot-scope="scope">
             <el-row>
-              <el-button plain="true" size="mini" type="primary" icon="el-icon-edit" circle></el-button>
-              <el-button plain="true" size="mini" type="danger" icon="el-icon-delete" circle></el-button>
-              <el-button plain="true" size="mini" type="success" icon="el-icon-check" circle></el-button>
+              <el-button plain size="mini" type="primary" icon="el-icon-edit" circle></el-button>
+              <el-button plain size="mini" type="danger" icon="el-icon-delete" circle></el-button>
+              <el-button plain size="mini" type="success" icon="el-icon-check" circle></el-button>
             </el-row>
           </template>
         </el-table-column>
       </el-table>
 <!--      4.分页-->
+      <el-pagination
+        @size-change="handleSizeChange"
+        @current-change="handleCurrentChange"
+        :current-page="pageNum"
+        :page-sizes="[2, 4, 6, 8]"
+        :page-size="2"
+        layout="total, sizes, prev, pager, next, jumper"
+        :total="total">
+      </el-pagination>
     </el-card>
 </template>
 
@@ -85,7 +94,7 @@ export default {
       userList: [],
       // 分页相关数据
       pageNum: 1,
-      pageSize: 10,
+      pageSize: 2,
       total: 0,
       // 用户状态相关数据
       value: true
@@ -122,6 +131,18 @@ export default {
       } else {
         // 提示信息获取失败
         this.$message.warning(msg)     }
+    },
+    // 分页方法
+    handleSizeChange (val) {
+      console.log(`每页 ${val} 条`)
+      this.pageSize = val
+      this.pageNum = 1
+      this.getUserList()
+    },
+    handleCurrentChange (val) {
+      console.log(`当前页: ${val}`)
+      this.pageNum = val
+      this.getUserList()
     }
   }
 }
