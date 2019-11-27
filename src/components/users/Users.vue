@@ -65,7 +65,7 @@
           label="操作">
           <template slot-scope="scope">
             <el-row>
-              <el-button plain size="mini" type="primary" icon="el-icon-edit" circle></el-button>
+              <el-button plain size="mini" @click="showEditUserDia(scope.row)" type="primary" icon="el-icon-edit" circle></el-button>
               <el-button plain size="mini" @click="showDeleUserMsgBox(scope.row.id)" type="danger" icon="el-icon-delete" circle></el-button>
               <el-button plain size="mini" type="success" icon="el-icon-check" circle></el-button>
             </el-row>
@@ -105,6 +105,25 @@
           <el-button type="primary" @click="addUser">确 定</el-button>
         </div>
       </el-dialog>
+
+<!--     2. 编辑用户的对话框-->
+      <el-dialog width="30%" title="编辑用户" :visible.sync="dialogFormVisibleEdit">
+        <el-form class="e-form" :model="form">
+          <el-form-item label="用户名" label-width="70px">
+            <el-input  disabled v-model="form.username" autocomplete="off"></el-input>
+          </el-form-item>
+          <el-form-item label="邮箱" label-width="70px">
+            <el-input v-model="form.email" autocomplete="off"></el-input>
+          </el-form-item>
+          <el-form-item label="电话" label-width="70px">
+            <el-input v-model="form.mobile" autocomplete="off"></el-input>
+          </el-form-item>
+        </el-form>
+        <div slot="footer" class="dialog-footer">
+          <el-button style="margin-right: 20px;" @click="dialogFormVisibleEdit = false">取 消</el-button>
+          <el-button type="primary" @click="editUser()">确 定</el-button>
+        </div>
+      </el-dialog>
     </el-card>
 </template>
 
@@ -123,13 +142,17 @@ export default {
       value: true,
       // 添加用户 对话框属性
       dialogFormVisibleAdd: false,
+      // 编辑用户 对话框属性
+      dialogFormVisibleEdit: false,
       // 添加用户的表单数据
       form: {
         username: '',
         password: '',
         email: '',
         mobile: ''
-      }
+      },
+      // 当前用户id
+      // currentUserId: 0
     }
   },
   mounted () {
@@ -161,7 +184,7 @@ export default {
         // 3.提示
         // this.$message.success(msg)
       } else {
-        // 提示信息获取失败
+        // 4.提示信息获取失败
         this.$message.warning(msg)
       }
     },
@@ -188,6 +211,7 @@ export default {
     },
     // 点击显示添加用户对话框
     showAddUserDia () {
+      this.form = {}
       this.dialogFormVisibleAdd = true
     },
     // 点击确定,发送网络请求,添加用户
@@ -238,6 +262,25 @@ export default {
           message: '已取消删除'
         })
       })
+    },
+    // 点击编辑按钮 弹出对话框
+    showEditUserDia (userInfo) {
+      // 把每条用户的信息赋值给data中的form
+      this.form = userInfo
+      this.dialogFormVisibleEdit = true
+    }, // 点击确定，编辑用户 发送网络请求
+    async editUser () {
+      const res = await this.$http.put('/users/' + this.form.id, {email: this.form.email, mobile: this.form.mobile})
+      // 1. 关闭对话框
+      this.dialogFormVisibleEdit = false
+      // 2.更新数据
+      this.getUserList()
+      // 3.提示
+      if (res.data.meta.status === 200) {
+        this.$message.success(res.data.meta.msg)
+      } else {
+        this.$message.warning(res.data.meta.msg)
+      }
     }
   }
 }
@@ -254,8 +297,5 @@ export default {
   }
   .addUser{
     margin-left: 20px;
-  }
-  .e-form{
-
   }
 </style>
