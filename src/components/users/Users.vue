@@ -54,6 +54,7 @@
           label="用户状态">
           <template slot-scope="scope">
             <el-switch
+              @change="changeMgStatus(scope.row)"
               v-model="scope.row.mg_state"
               active-color="#13ce66"
               inactive-color="#ff4949">
@@ -281,6 +282,17 @@ export default {
       } else {
         this.$message.warning(res.data.meta.msg)
       }
+    },
+    // 修改用户状态
+    changeMgStatus (user) {
+      this.$http.put('/users/' + user.id + '/state/' + user.mg_state).then((res) => {
+        // console.log(res)
+        if (res.data.meta.status === 200) {
+          this.$message.success(res.data.meta.msg)
+        }else {
+          this.$message.error(res.data.meta.msg)
+        }
+      })
     }
   }
 }
