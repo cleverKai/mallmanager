@@ -68,7 +68,7 @@
             <el-row>
               <el-button plain size="mini" @click="showEditUserDia(scope.row)" type="primary" icon="el-icon-edit" circle></el-button>
               <el-button plain size="mini" @click="showDeleUserMsgBox(scope.row.id)" type="danger" icon="el-icon-delete" circle></el-button>
-              <el-button plain size="mini" type="success" icon="el-icon-check" circle></el-button>
+              <el-button plain size="mini" @click="showSetUserRoleDia(scope.row)" type="success" icon="el-icon-check" circle></el-button>
             </el-row>
           </template>
         </el-table-column>
@@ -125,6 +125,26 @@
           <el-button type="primary" @click="editUser()">确 定</el-button>
         </div>
       </el-dialog>
+<!--      设置用户角色对话框-->
+
+      <el-dialog width="30%" title="分配角色" :visible.sync="dialogFormVisibleSet">
+        <el-form :model="form">
+          <el-form-item label="用户名" label-width="70px">
+            {{currUserName}}
+          </el-form-item>
+          <el-form-item label="角色选择" label-width="70px">
+<!--            如果select 中绑定的值与 option中的value值一样，则会显示显示该option中的lable值-->
+            <el-select v-model="currRoleId">
+              <el-option disabled label="请选择" :value="-1"></el-option>
+              <el-option v-for="(item,index) in roles" :key="index" :label="item.roleName" :value="item.id"></el-option>
+            </el-select>
+          </el-form-item>
+        </el-form>
+        <div slot="footer" class="dialog-footer">
+          <el-button @click="dialogFormVisibleSet = false">取 消</el-button>
+          <el-button type="primary" @click="setRole">确 定</el-button>
+        </div>
+      </el-dialog>
     </el-card>
 </template>
 
@@ -145,6 +165,8 @@ export default {
       dialogFormVisibleAdd: false,
       // 编辑用户 对话框属性
       dialogFormVisibleEdit: false,
+      // 设置用户角色对话框属性
+      dialogFormVisibleSet: false,
       // 添加用户的表单数据
       form: {
         username: '',
@@ -152,8 +174,14 @@ export default {
         email: '',
         mobile: ''
       },
+      // 分配角色
+      currRoleId: -1,
+      // 当前用户名
+      currUserName: '',
+      // 保存所有的角色数据
+      roles: [],
       // 当前用户id
-      // currentUserId: 0
+      currUserId : -1
     }
   },
   mounted () {
@@ -289,10 +317,40 @@ export default {
         // console.log(res)
         if (res.data.meta.status === 200) {
           this.$message.success(res.data.meta.msg)
-        }else {
+        } else {
           this.$message.error(res.data.meta.msg)
         }
       })
+    },
+    // 点击设置用户角色
+    async showSetUserRoleDia (user) {
+      this.dialogFormVisibleSet = true
+      this.currUserName = user.username
+      this.currUserId = user.id
+      // 打开对话框，获取用户角色id
+      const res = await this.$http.get('/users/' + user.id)
+      if (res.data.meta.status === 200) {
+        this.currRoleId = res.data.data.rid
+      }
+      // 获取所有角色
+      this.$http.get('/roles').then((res1) => {
+        this.roles = res1.data.data
+      })
+    },
+    // 点击分配角色确定按钮，发送请求
+    async setRole () {
+      // 接口参数 user/:id/role
+      // id:修改的用户id
+      // rid参数 必须是请求体
+      const res = await this.$http.put('/users/' + this.currUserId + '/role', {
+        rid: this.currRoleId
+      })
+      if (res.data.meta.status === 200) {
+        this.dialogFormVisibleSet = false
+        this.$message.success(res.data.meta.msg)
+      } else {
+        this.$message.warning(res.data.meta.msg)
+      }
     }
   }
 }
