@@ -1,11 +1,7 @@
 <template>
     <el-card class="box-card">
 <!--     1. 面包屑-->
-      <el-breadcrumb separator-class="el-icon-arrow-right">
-        <el-breadcrumb-item>用户</el-breadcrumb-item>
-        <el-breadcrumb-item>用户管理</el-breadcrumb-item>
-        <el-breadcrumb-item>用户列表</el-breadcrumb-item>
-      </el-breadcrumb>
+      <MyBread level1="用户管理" level2="用户列表"></MyBread>
 <!--      2.搜索-->
       <el-row class="searchRow">
         <el-col>
@@ -149,6 +145,7 @@
 </template>
 
 <script>
+import MyBread from '../cuscom/myBread'
 export default {
   name: 'Users',
   data () {
@@ -181,8 +178,11 @@ export default {
       // 保存所有的角色数据
       roles: [],
       // 当前用户id
-      currUserId : -1
+      currUserId: -1
     }
+  },
+  components: {
+    MyBread
   },
   mounted () {
     this.getUserList()

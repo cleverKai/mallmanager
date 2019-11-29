@@ -23,6 +23,11 @@ export default new Router({
           path: '/users',
           name: 'users',
           component: () => import('@/components/users/Users')
+        },
+        {
+          path: '/rights',
+          name: 'right',
+          component: () => import('@/components/rights/Right')
         }
       ]
     }
