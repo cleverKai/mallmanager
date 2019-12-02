@@ -14,16 +14,19 @@
 <!--      3.表格-->
       <el-table
         :data="userList"
+        v-loading="loading"
         style="width: 100%">
         <el-table-column
           type="index"
           label="#"
-          width="60">
+          width="60"
+          align="center">
         </el-table-column>
         <el-table-column
           prop="username"
           label="姓名"
-          width="100">
+          width="120"
+          align="center">
         </el-table-column>
         <el-table-column
           prop="email"
@@ -31,12 +34,14 @@
         </el-table-column>
         <el-table-column
           prop="mobile"
-          label="电话">
+          label="电话"
+          align="center">
         </el-table-column>
 
         <el-table-column
           prop="create_time"
-          label="创建时间">
+          label="创建时间"
+          align="center">
 <!--          如果单元格内显示的内容不是字符串，而是组件-->
 <!--          需要给被显示内容外层包裹一个template-->
 <!--         template内部需要需要使用数据，需要设置slot-scope属性
@@ -47,7 +52,8 @@
         </el-table-column>
 
         <el-table-column
-          label="用户状态">
+          label="用户状态"
+          align="center">
           <template slot-scope="scope">
             <el-switch
               @change="changeMgStatus(scope.row)"
@@ -59,7 +65,8 @@
         </el-table-column>
         <el-table-column
           prop="address"
-          label="操作">
+          label="操作"
+          align="center">
           <template slot-scope="scope">
             <el-row>
               <el-button plain size="mini" @click="showEditUserDia(scope.row)" type="primary" icon="el-icon-edit" circle></el-button>
@@ -178,7 +185,9 @@ export default {
       // 保存所有的角色数据
       roles: [],
       // 当前用户id
-      currUserId: -1
+      currUserId: -1,
+      // 加载数据动画
+      loading: true
     }
   },
   components: {
@@ -194,10 +203,10 @@ export default {
       // pagenum 当前页码 不能为空
       // pagesize 每页显示条数  不能为空
       // eslint-disable-next-line no-unused-vars
-      // 需要授权的API 必须设置请求头，并且要携带token
-      const AUTH_TOKEN = localStorage.getItem('token')
-      // eslint-disable-next-line no-undef
-      this.$http.defaults.headers.common['Authorization'] = AUTH_TOKEN
+      // 需要授权的API 必须设置请求头，并且要携带token --- 该功能重构到请求拦截中
+      // const AUTH_TOKEN = localStorage.getItem('token')
+      // // eslint-disable-next-line no-undef
+      // this.$http.defaults.headers.common['Authorization'] = AUTH_TOKEN
       const res = await this.$http.get('/users?query=' + this.user + '&pagenum=' + this.pageNum +
       '&pagesize=' + this.pageSize).then()
       console.log(res)
@@ -206,6 +215,8 @@ export default {
       const { meta: {msg, status}, data: { total, users}} = res.data
 
       if (status === 200) {
+        // 取消加载动画
+        this.loading = false
         // 1.渲染数据
         this.userList = users
         // 2.total赋值

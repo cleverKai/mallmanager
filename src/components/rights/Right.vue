@@ -3,6 +3,37 @@
 <!--     1. 面包屑-->
       <MyBread level1="权限管理" level2="权限列表"></MyBread>
 <!--     2.表格-->
+      <el-table
+        v-loading="loading"
+        class="table"
+        :data="rightList"
+        height="550px"
+        border
+        style="width: 100%">
+        <el-table-column
+          type="index"
+          label="#"
+          width="100"
+          align="center">
+        </el-table-column>
+        <el-table-column
+          prop="authName"
+          label="权限名称"
+          width="200"
+          align="center">
+        </el-table-column>
+        <el-table-column
+          prop="path"
+          label="路径"
+          width="350"
+          align="center">
+        </el-table-column>
+        <el-table-column
+          prop="level"
+          label="层级"
+          align="center">
+        </el-table-column>
+      </el-table>
     </el-card>
 </template>
 
@@ -12,7 +43,8 @@ export default {
   name: 'right',
   data () {
     return {
-      rightList: []
+      rightList: [],
+      loading: true
     }
   },
   components: {
@@ -29,13 +61,16 @@ export default {
       // // eslint-disable-next-line no-undef
       // this.$http.defaults.headers.common['Authorization'] = AUTH_TOKEN
       const res = await this.$http.get('/rights/list')
-      // console.log(res)
+      this.loading = false
+      console.log(res)
       this.rightList = res.data.data
     }
   }
 }
 </script>
 
-<style scoped>
-
+<style scoped lang="css">
+  .table{
+    margin-top: 30px;
+  }
 </style>

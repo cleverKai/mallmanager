@@ -7,6 +7,7 @@ myHttpServer.install = (Vue) => {
     // 在发送请求之前做什么
     // 判断请求是否为登录请求，如果不是就添加请求头
     // 除了登录请求以外，其他所有请求都需要在请求头部携带token
+    // config.url 时基准地址后面的地址参数
     if (config.url !== 'login') {
       const AUTH_TOKEN = localStorage.getItem('token')
       config.headers['Authorization'] = AUTH_TOKEN
