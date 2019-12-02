@@ -35,20 +35,21 @@ export default {
           let status = res.data.meta.status
           // 登录成功
           if (status === 200) {
+            // 2. 提示登录成功
             this.fullscreenLoading = false
             // 登录成功 保存token
             localStorage.setItem('token', res.data.data.token)
             this.$message.success(res.data.meta.msg)
+            // 1. 跳转首页
             this.$router.push('/home')
           } else {
+            // 登录失败
+            this.fullscreenLoading = false
+            // 1. 提醒失败原因
             this.$message.error(res.data.meta.msg)
           }
         })
       }
-      // 1. 跳转首页
-      // 2. 提示登录成功
-      // 登录失败
-      // 1. 提醒失败原因
     }
   }
 }
