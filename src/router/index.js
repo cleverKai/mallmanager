@@ -28,6 +28,11 @@ export default new Router({
           path: '/rights',
           name: 'right',
           component: () => import('@/components/rights/Right')
+        },
+        {
+          path: '/role',
+          name: 'role',
+          component: () => import('@/components/rights/Role')
         }
       ]
     }

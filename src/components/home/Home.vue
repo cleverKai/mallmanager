@@ -40,7 +40,7 @@
               <i class="el-icon-user-solid"></i>
               <span>权限管理</span>
             </template>
-            <el-menu-item index="1-1">
+            <el-menu-item index="role">
               <i class="el-icon-menu"></i>
               <span>角色列表</span>
             </el-menu-item>
