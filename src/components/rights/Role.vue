@@ -66,7 +66,7 @@
             <el-row>
               <el-button plain size="mini" @click="showEditUserRoleDia(scope.row)" type="primary" icon="el-icon-edit" circle></el-button>
               <el-button plain size="mini" @click="showDeleUserRoleBox(scope.row.id)" type="danger" icon="el-icon-delete" circle></el-button>
-              <el-button plain size="mini" @click="showSetUserRoleDia(scope.row)" type="success" icon="el-icon-check" circle></el-button>
+              <el-button plain size="mini" @click="showSetRightDia(scope.row)" type="success" icon="el-icon-check" circle></el-button>
             </el-row>
           </template>
         </el-table-column>
@@ -102,6 +102,32 @@
           <el-button type="primary" @click="editUserRole">确 定</el-button>
         </div>
       </el-dialog>
+<!--       修改角色对话框-->
+      <el-dialog title="修改权限" :visible.sync="dialogFormVisibleR">
+          <!--
+          树形结构
+          data -> 数据源 []
+          show-checkbox -> 选择框
+          node-key ->每个节点的唯一标识，通常是data数据源中key名id
+          default-expanded-keys 默认展开的节点id
+          default-checked-keys 默认选择的节点id
+          props -> 配置项 { label,children}
+          label 节点的文字标题和children节点的子节点
+          其值来源于data绑定数据源中该数据的key名 "label" , "children"
+          :default-expanded-keys="[2, 3]"
+          :default-checked-keys="[5]"
+         -->
+        <el-tree
+          :data="treeList"
+          show-checkbox
+          node-key="id"
+          :props="defaultProps">
+        </el-tree>
+      <div slot="footer" class="dialog-footer">
+        <el-button @click="dialogFormVisibleR = false">取 消</el-button>
+        <el-button type="primary" @click="dialogFormVisibleR = false">确 定</el-button>
+      </div>
+      </el-dialog>
 
     </el-card>
 </template>
@@ -127,7 +153,15 @@ export default {
       // 编辑角色对话框属性
       dialogFormVisibleEditRole: false,
       // 当前用户角色id
-      currRoleId: -1
+      currRoleId: -1,
+      // 修改权限相关属性
+      dialogFormVisibleR: false,
+      // 树形权限列表数据
+      treeList: [],
+      defaultProps: {
+        label: 'authName',
+        children: 'children'
+      }
     }
   },
   mounted () {
@@ -224,7 +258,7 @@ export default {
       })
     },
     // 取消角色权限
-    deleRight (role,rightId) {
+    deleRight (role, rightId) {
       // 接口路径 roles/:roleid/rights/rightId
       this.$confirm('此操作将永久取消该角色权限, 是否继续?', '提示', {
         confirmButtonText: '确定',
@@ -248,6 +282,15 @@ export default {
           message: '已取消删除'
         })
       })
+    },
+    // 添加角色权限 ，打开对话框
+    showSetRightDia (role) {
+      this.$http.get('/rights/tree').then((res) => {
+        if (res.data.meta.status === 200) {
+          this.treeList = res.data.data
+        }
+      })
+      this.dialogFormVisibleR = true
     }
   }
 
