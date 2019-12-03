@@ -15,6 +15,37 @@
         style="width: 100%"
       height="530px">
         <el-table-column
+          type="expand"
+          width="100">
+<!--          每行展开容器-->
+          <template slot-scope="scope">
+              <el-row v-for="(item1,index) in scope.row.children" :key="index">
+<!--                一级权限-->
+                <el-col :span="4">
+                  <el-tag @close="deleRight(scope.row,item1.id)" closable>{{ item1.authName }}</el-tag>
+                  <i class="el-icon-arrow-right"></i>
+                </el-col>
+<!--                二级权限-->
+                <el-col :span="20">
+                  <el-row v-for="(item2,index) in item1.children" :key="index">
+                    <el-col :span="4">
+                      <el-tag @close="deleRight(scope.row,item2.id)" closable type="success">{{ item2.authName }}</el-tag>
+                      <i class="el-icon-arrow-right"></i>
+                    </el-col>
+<!--                    三级权限-->
+                    <el-col  :span="20">
+                      <el-tag closable @close="deleRight(scope.row,item3.id)" type="warning" v-for="(item3,index) in item2.children" :key="index">
+                        {{ item3.authName }}
+                      </el-tag>
+                    </el-col>
+                  </el-row>
+                </el-col>
+              </el-row>
+<!--            未分配任何权限-->
+            <span v-if="scope.row.children.length === 0">该角色未分配任何权限!</span>
+          </template>
+        </el-table-column>
+        <el-table-column
           type="index"
           label="#"
           width="150">
@@ -125,8 +156,8 @@ export default {
         roleName: this.form.roleName,
         roleDesc: this.form.roleDesc
       }).then((res) => {
-        // eslint-disable-next-line no-empty-pattern,no-unused-vars
-        const {data: {}, meta: { msg,status}} = res.data
+        // eslint-disable-next-line no-empty-pattern,standard/object-curly-even-spacing
+        const {data: {}, meta: { msg, status}} = res.data
         if (status === 201) {
           // 提示用户修改成功
           this.$message.success(msg)
@@ -150,8 +181,10 @@ export default {
       }).then(async () => {
         const res = await this.$http.delete('/roles/' + userRoleId)
         if (res.data.meta.status === 200) {
-          // 更新视图
-          this.getRoleList()
+          // 重新赋值roleList
+          this.roleList = res.data.data
+          // // 更新视图
+          // this.getRoleList()
           this.$message({
             type: 'success',
             message: res.data.meta.msg
@@ -188,6 +221,32 @@ export default {
           this.dialogFormVisibleEditRole = false
           this.$message.warning('修改失败')
         }
+      })
+    },
+    // 取消角色权限
+    deleRight (role,rightId) {
+      // 接口路径 roles/:roleid/rights/rightId
+      this.$confirm('此操作将永久取消该角色权限, 是否继续?', '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning',
+        center: true
+      }).then(async () => {
+        const res = await this.$http.delete('/roles/' + role.id + '/rights/' + rightId)
+        if (res.data.meta.status === 200) {
+          // 用户提示
+          this.$message({
+            type: 'success',
+            message: res.data.meta.msg
+          })
+          // 刷新视图 ,将剩余返回的值赋值给当前角色.children
+          role.children = res.data.data
+        }
+      }).catch(() => {
+        this.$message({
+          type: 'info',
+          message: '已取消删除'
+        })
       })
     }
   }
