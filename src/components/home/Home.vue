@@ -26,7 +26,11 @@
 <!--          1-->
           <el-submenu :index=" '' + item1.order" v-for="(item1,index) in menus" :key="index">
             <template slot="title">
-              <i class="el-icon-user"></i>
+              <i v-if="item1.order === 1" class="el-icon-user-solid"></i>
+              <i v-if="item1.order === 2" class="el-icon-s-custom"></i>
+              <i v-if="item1.order === 3" class="el-icon-s-goods"></i>
+              <i v-if="item1.order === 4" class="el-icon-s-order"></i>
+              <i v-if="item1.order === 5" class="el-icon-s-data"></i>
               <span>{{ item1.authName }}</span>
             </template>
               <el-menu-item v-for="(item2,index) in item1.children" :key="index" :index="item2.path">
@@ -46,18 +50,18 @@
 <script>
 export default {
   name: 'Home',
-  data(){
-    return{
-      menus:[]
+  data () {
+    return {
+      menus: []
     }
   },
-  beforeCreate () {
-    // 验证登录权限
-    const token = localStorage.getItem('token')
-    if (!token) {
-      this.$router.push({name: 'login'})
-    }
-  },
+  // beforeCreate () {
+  //   // 验证登录权限
+  //   const token = localStorage.getItem('token')
+  //   if (!token) {
+  //     this.$router.push({name: 'login'})
+  //   }
+  // },
   mounted () {
     this.getMenus()
   },
