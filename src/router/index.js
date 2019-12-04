@@ -30,8 +30,8 @@ export default new Router({
           component: () => import('@/components/rights/Right')
         },
         {
-          path: '/role',
-          name: 'role',
+          path: '/roles',
+          name: 'roles',
           component: () => import('@/components/rights/Role')
         }
       ]
