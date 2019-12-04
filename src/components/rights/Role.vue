@@ -103,7 +103,7 @@
         </div>
       </el-dialog>
 <!--       修改角色对话框-->
-      <el-dialog title="修改权限" :visible.sync="dialogFormVisibleR">
+      <el-dialog title="修改权限" :visible.sync="dialogFormVisibleRight">
           <!--
           树形结构
           data -> 数据源 []
@@ -114,18 +114,20 @@
           props -> 配置项 { label,children}
           label 节点的文字标题和children节点的子节点
           其值来源于data绑定数据源中该数据的key名 "label" , "children"
-          :default-expanded-keys="[2, 3]"
           :default-checked-keys="[5]"
          -->
         <el-tree
+          ref="tree"
           :data="treeList"
           show-checkbox
           node-key="id"
+          default-expand-all
+          :default-checked-keys="checkedArr"
           :props="defaultProps">
         </el-tree>
       <div slot="footer" class="dialog-footer">
         <el-button @click="dialogFormVisibleR = false">取 消</el-button>
-        <el-button type="primary" @click="dialogFormVisibleR = false">确 定</el-button>
+        <el-button type="primary" @click="setRoleRight">确 定</el-button>
       </div>
       </el-dialog>
 
@@ -155,13 +157,17 @@ export default {
       // 当前用户角色id
       currRoleId: -1,
       // 修改权限相关属性
-      dialogFormVisibleR: false,
+      dialogFormVisibleRight: false,
       // 树形权限列表数据
       treeList: [],
       defaultProps: {
         label: 'authName',
         children: 'children'
-      }
+      },
+      // 需要默认展开的节点id
+      arrExpand: [] ,
+      // 该角色已有的权限id
+      checkedArr: []
     }
   },
   mounted () {
@@ -285,12 +291,62 @@ export default {
     },
     // 添加角色权限 ，打开对话框
     showSetRightDia (role) {
+      this.currRoleId = role.id
+      let arrtemp2 = []
+      role.children.forEach((item1) => {
+        // arrtemp2.push(item1.id)
+        item1.children.forEach((item2) => {
+          // arrtemp2.push(item2.id)
+          item2.children.forEach((item3) => {
+            arrtemp2.push(item3.id)
+          })
+        })
+      })
+      this.checkedArr = arrtemp2
       this.$http.get('/rights/tree').then((res) => {
         if (res.data.meta.status === 200) {
           this.treeList = res.data.data
+          // 将所有节点的id 放到 数组里面
+          // let arrtemp1 = []
+          // this.treeList.forEach((item1) => {
+          //   arrtemp1.push(item1.id)
+          //   item1.children.forEach((item2) => {
+          //     arrtemp1.push(item2.id)
+          //     item2.children.forEach((item3) => {
+          //       arrtemp1.push(item3.id)
+          //     })
+          //   })
+          // })
+          // this.arrExpand = arrtemp1
         }
       })
-      this.dialogFormVisibleR = true
+      this.dialogFormVisibleRight = true
+    },
+    // 点击修改权限对话框确定按钮，发送请求
+    async setRoleRight () {
+      // rids 是树形节点中 所有全选和半选的label的id []
+      // 1.获取全选id的数组 arr1 getCheckedKeys()
+      let arr1 = this.$refs.tree.getCheckedKeys()
+      // 在vue中，调用dom元素的js方法
+      // 1. 给dom元素添加ref属性值，
+      // 2. this.$refs.ref属性值
+      // 2.获取半选id的数组 arr2 getHalfCheckedKeys()
+      let arr2 = this.$refs.tree.getHalfCheckedKeys()
+      let arr = [...arr1, ...arr2]
+      const res = await this.$http.post('/roles/' + this.currRoleId + '/rights/', {rids: arr.join(',')})
+      const  {msg, status} = res.data.meta
+      if (status === 200) {
+        // 请求成功
+        // 1. 关闭对话框
+        this.dialogFormVisibleRight = false
+        // 2. 提示用户
+        this.$message.success(msg)
+        // 3. 更新视图
+        this.getRoleList()
+      } else {
+        this.dialogFormVisibleRight = false
+        this.$message.warning(msg)
+      }
     }
   }
 
