@@ -9,9 +9,11 @@
         title="添加商品信息"
         type="success"
         center
+        :closable="false"
         show-icon>
       </el-alert>
       <el-alert
+        :closable="false"
         v-else
         class="alert"
         title="添加商品信息"
@@ -29,7 +31,7 @@
       </el-steps>
       <!--  tab 当v-model 里面的active绑定的值与name一致时 当前tab被选中-->
       <el-form label-position="top" label-width="80px" :model="form" style="height: 420px; overflow: auto">
-        <el-tabs v-model="active" tab-position="left" style="margin-top: 20px;">
+        <el-tabs @tab-click="tabChange" v-model="active" tab-position="left" style="margin-top: 20px;">
           <el-tab-pane name="1" label="基本信息">
 <!--            添加商品基本信息-->
             <el-form-item label="商品名称">
@@ -46,14 +48,22 @@
             </el-form-item>
             <el-form-item label="商品重量">
               <el-cascader
-                v-model="value"
+                clearable
+                props.expandTrigger = "hover"
+                v-model="selectedOptions"
                 :options="options"
-                :props="{ expandTrigger: 'hover' }"
+                :props="defaultProp"
                 @change="handleChange"></el-cascader>
             </el-form-item>
           </el-tab-pane>
           <el-tab-pane name="2" label="商品参数">
-
+<!--            该三级分类的商品参数-->
+              <el-form-item  :label="item1.attr_name" v-for="(item1,index) in arrDyParams" :key="index">
+<!--                 复选框-->
+                <el-checkbox-group  v-model="checkList">
+                  <el-checkbox v-for="(item2,index) in item1.attr_vals" :key="index" :label="item2"></el-checkbox>
+                </el-checkbox-group>
+              </el-form-item>
           </el-tab-pane>
           <el-tab-pane name="3" label="商品属性">
 
@@ -89,16 +99,61 @@ export default {
       },
       // 基本商品信息联级选择器数据
       options: [],
-      // 联级菜单表单数据
-      value: ''
+      // 级联菜单表单数据
+      selectedOptions: [],
+      defaultProp: {
+        label: 'cat_name',
+        value: 'cat_id',
+        children: 'children'
+      },
+      // 动态参数的数据数组
+      arrDyParams: [],
+      // 复选框组数组
+      checkList: []
     }
   },
   components: {
     MyBread
   },
-  methods:{
+  mounted () {
+    this.getGoodsCate()
+  },
+  methods: {
+    // 级联选择器@change触发的事件
     handleChange (val) {
       console.log(val)
+    },
+    // 获取级联三级菜单信息
+    async getGoodsCate () {
+      const res = await this.$http.get('categories?type=3')
+      console.log(res)
+      const {data, meta} = res.data
+      if (meta.status === 200) {
+        this.options = data
+      }
+    },
+    // tab改变时触发
+    tabChange () {
+      // 如果点击的是第二个tab,同时三级分类要有值
+      if (this.active === '2') {
+        if (this.selectedOptions.length !== 3) {
+          // 提示
+          this.$message.warning('请选择商品的三级分类')
+        } else {
+          // 发送网络请求，获取三级分类商品的属性
+          // id 指当前的分类id
+          this.$http.get('categories/' + this.selectedOptions[2] + '/attributes?sel=many').then((res) => {
+            // eslint-disable-next-line no-unused-vars
+            if (res.data.meta.status === 200) {
+              this.arrDyParams = res.data.data
+              // this.arrDyParams每个对象.attr_vals 字符串转为数组
+              this.arrDyParams.forEach((item) => {
+                item.attr_vals = item.attr_vals.length === 0 ? [] : item.attr_vals.split(',')
+              })
+            }
+          })
+        }
+      }
     }
   }
 }
