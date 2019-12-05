@@ -182,7 +182,7 @@ export default {
         // 发送删除用户的请求
         // eslint-disable-next-line no-unused-vars
         const res = await this.$http.delete('/goods/' + goodsId)
-        console.log(res)
+        // console.log(res)
         if (res.data.meta.status === 200) {
           this.pageNum = 1
           // 更新视图
@@ -215,7 +215,7 @@ export default {
         goods_name: this.form.goodsName,
         goods_price: this.form.goodsPrice,
         goods_number: this.form.goodsNum,
-        goods_weight: this.form.goodsWeight,
+        goods_weight: this.form.goodsWeight
       }).then((res) => {
         console.log(res)
       })

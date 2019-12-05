@@ -46,7 +46,7 @@
             <el-form-item label="商品重量">
               <el-input v-model="form.goods_weight"></el-input>
             </el-form-item>
-            <el-form-item label="商品重量">
+            <el-form-item label="商品参数">
               <el-cascader
                 clearable
                 props.expandTrigger = "hover"
@@ -60,13 +60,16 @@
 <!--            该三级分类的商品参数-->
               <el-form-item  :label="item1.attr_name" v-for="(item1,index) in arrDyParams" :key="index">
 <!--                 复选框-->
-                <el-checkbox-group  v-model="checkList">
-                  <el-checkbox v-for="(item2,index) in item1.attr_vals" :key="index" :label="item2"></el-checkbox>
+                <el-checkbox-group  v-model="item1.attr_vals">
+                  <el-checkbox border v-for="(item2,index) in item1.attr_vals" :key="index" :label="item2"></el-checkbox>
                 </el-checkbox-group>
               </el-form-item>
           </el-tab-pane>
           <el-tab-pane name="3" label="商品属性">
-
+            <!--            添加商品基本信息-->
+            <el-form-item v-for="(item3,index) in staticDyParams" :key="index" :label="item3.attr_name">
+              <el-input v-model="item3.attr_vals"></el-input>
+            </el-form-item>
           </el-tab-pane>
           <el-tab-pane name="4" label="商品图片">
 
@@ -109,7 +112,8 @@ export default {
       // 动态参数的数据数组
       arrDyParams: [],
       // 复选框组数组
-      checkList: []
+      checkList: [],
+      staticDyParams: []
     }
   },
   components: {
@@ -153,6 +157,17 @@ export default {
             }
           })
         }
+      }
+      // 当点击的是第三个tab
+      if (this.active === '3') {
+        // 发送网络请求，获取三级分类商品的静态属性
+        this.$http.get('categories/' + this.selectedOptions[2] + '/attributes?sel=only').then((res) => {
+          // console.log(res.data)
+          const {data, meta} = res.data
+          if (meta.status === 200) {
+            this.staticDyParams = data
+          }
+        })
       }
     }
   }
