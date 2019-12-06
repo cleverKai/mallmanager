@@ -66,7 +66,7 @@
               </el-form-item>
           </el-tab-pane>
           <el-tab-pane name="3" label="商品属性">
-            <!--            添加商品基本信息-->
+            <!--            添加商品的静态信息-->
             <el-form-item v-for="(item3,index) in staticDyParams" :key="index" :label="item3.attr_name">
               <el-input v-model="item3.attr_vals"></el-input>
             </el-form-item>
@@ -160,14 +160,18 @@ export default {
       }
       // 当点击的是第三个tab
       if (this.active === '3') {
-        // 发送网络请求，获取三级分类商品的静态属性
-        this.$http.get('categories/' + this.selectedOptions[2] + '/attributes?sel=only').then((res) => {
-          // console.log(res.data)
-          const {data, meta} = res.data
-          if (meta.status === 200) {
-            this.staticDyParams = data
-          }
-        })
+        if (this.selectedOptions.length !== 3) {
+          this.$message.warning('请选择商品的三级分类')
+        } else {
+          // 发送网络请求，获取三级分类商品的静态属性
+          this.$http.get('categories/' + this.selectedOptions[2] + '/attributes?sel=only').then((res) => {
+            // console.log(res.data)
+            const {data, meta} = res.data
+            if (meta.status === 200) {
+              this.staticDyParams = data
+            }
+          })
+        }
       }
     }
   }
