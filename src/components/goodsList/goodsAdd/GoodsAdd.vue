@@ -49,7 +49,7 @@
             <el-form-item label="商品参数">
               <el-cascader
                 clearable
-                props.expandTrigger = "hover"
+                expandTrigger = "hover"
                 v-model="selectedOptions"
                 :options="options"
                 :props="defaultProp"
@@ -90,9 +90,9 @@
             <el-form-item>
 <!--              商品内容-->
 <!--              1.富文本-->
-              <quillEditor></quillEditor>
+              <quillEditor style="height: 200px" v-model="form.goods_introduce"></quillEditor>
 <!--              2.点击添加按钮-->
-              <el-button class="el-btn" type="primary">添加商品</el-button>
+              <el-button class="el-btn" type="primary" @click="addGoods">添加商品</el-button>
             </el-form-item>
           </el-tab-pane>
         </el-tabs>
@@ -101,6 +101,7 @@
 </template>
 
 <script>
+import {addQuillTitle} from '../../../util/quill-title'
 import MyBread from '../../cuscom/myBread'
 // 富文本插件样式
 import 'quill/dist/quill.core.css'
@@ -116,12 +117,16 @@ export default {
       // 添加商品的表单数据
       form: {
         goods_name: '',
+        // 以','号分割的分类列表 不能为空
         goods_cat: '',
-        goods_price: 0,
-        goods_number: 0,
-        goods_weight: 0,
+        goods_price: '',
+        goods_number: '',
+        goods_weight: '',
         goods_introduce: '',
+        // 上传图片的临时路径
+        // pics为数组, [{pics: 图片临时路径}]
         pics: [],
+        // 商品的参数, 动态参数+静态参数
         attrs: []
       },
       // 基本商品信息联级选择器数据
@@ -150,6 +155,7 @@ export default {
   },
   mounted () {
     this.getGoodsCate()
+    addQuillTitle()
   },
   methods: {
     // 级联选择器@change触发的事件
@@ -211,20 +217,40 @@ export default {
     // 图片移除时触发
     handleRemove (file) {
       // 图片上传到的临时路径 file.response.data.tmp_path
-      console.log('移除')
-      console.log(file)
+      // console.log('移除')
+      // console.log(file)
+      // 获取移除的图片对象在数组的下标
+      let Index = this.form.pics.findIndex((item) => {
+        return item.pic === file.response.data.tmp_path
+      })
+      this.form.pics.splice(Index, 1)
     },
     // 图片上传成功时触发
     handleSuccess (file) {
       // file.data.tmp_path 图片上传到的临时路径
-      console.log('上传成功')
-      console.log(file)
+      // console.log('上传成功')
+      // console.log(file)
+      // 将图片的临时路径放到pics数组中
+      this.form.pics.push({
+        pic: file.data.tmp_path
+      })
+    },
+    // 点击添加商品按钮
+    async addGoods () {
+      // 发送请求之前,处理this.form里面未处理的数据
+      // goods_cat
+      this.form.goods_cat = this.selectedOptions.join(',')
+      // pics [{pic:路径}]
+
+      const res = await this.$http.post('/goods/', this.form)
+
+      console.log(res)
     }
   }
 }
 </script>
 
-<style scoped lang="css">
+<style scoped>
 .alert{
   margin-top: 30px;
 }
@@ -232,9 +258,7 @@ export default {
     margin-top: 30px;
   }
   .el-btn{
-    margin-top: 100px;
+    margin-top: 120px;
     margin-left: 500px;
-    justify-content: center;
-    align-items: center;
   }
 </style>
