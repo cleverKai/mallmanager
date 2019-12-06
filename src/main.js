@@ -7,6 +7,7 @@ import ElementUI from 'element-ui'
 import moment from 'moment'
 import 'element-ui/lib/theme-chalk/index.css'
 import '@/assets/css/reset.css'
+
 import router from './router'
 Vue.config.productionTip = false
 // 使用element-ui插件

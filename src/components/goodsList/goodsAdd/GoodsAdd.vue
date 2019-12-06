@@ -72,10 +72,28 @@
             </el-form-item>
           </el-tab-pane>
           <el-tab-pane name="4" label="商品图片">
-
+<!--              上传商品图片-->
+            <el-form-item>
+              <el-upload
+                action="http://api.xiaomadagege.cn:8800/api/private/v1/upload"
+                :headers="headers"
+                :on-preview="handlePreview"
+                :on-remove="handleRemove"
+                :on-success="handleSuccess"
+                list-type="picture">
+                <el-button size="small" type="primary">点击上传</el-button>
+                <div slot="tip" class="el-upload__tip">只能上传jpg/png文件，且不超过500kb</div>
+              </el-upload>
+            </el-form-item>
           </el-tab-pane>
           <el-tab-pane name="5" label="商品内容">
-
+            <el-form-item>
+<!--              商品内容-->
+<!--              1.富文本-->
+              <quillEditor></quillEditor>
+<!--              2.点击添加按钮-->
+              <el-button class="el-btn" type="primary">添加商品</el-button>
+            </el-form-item>
           </el-tab-pane>
         </el-tabs>
       </el-form>
@@ -84,6 +102,12 @@
 
 <script>
 import MyBread from '../../cuscom/myBread'
+// 富文本插件样式
+import 'quill/dist/quill.core.css'
+import 'quill/dist/quill.snow.css'
+import 'quill/dist/quill.bubble.css'
+// 富文本组件
+import { quillEditor } from 'vue-quill-editor'
 export default {
   name: 'GoodsAdd',
   data () {
@@ -113,11 +137,16 @@ export default {
       arrDyParams: [],
       // 复选框组数组
       checkList: [],
-      staticDyParams: []
+      staticDyParams: [],
+      // 图片上传设置请求头
+      headers: {
+        Authorization: localStorage.getItem('token')
+      }
     }
   },
   components: {
-    MyBread
+    MyBread,
+    quillEditor
   },
   mounted () {
     this.getGoodsCate()
@@ -173,6 +202,23 @@ export default {
           })
         }
       }
+    },
+    // 图片上传的相关方法
+    // file指当前操作图片的相关信息(图片名/图片路径)
+    handlePreview (file) {
+
+    },
+    // 图片移除时触发
+    handleRemove (file) {
+      // 图片上传到的临时路径 file.response.data.tmp_path
+      console.log('移除')
+      console.log(file)
+    },
+    // 图片上传成功时触发
+    handleSuccess (file) {
+      // file.data.tmp_path 图片上传到的临时路径
+      console.log('上传成功')
+      console.log(file)
     }
   }
 }
@@ -184,5 +230,11 @@ export default {
 }
   .steps{
     margin-top: 30px;
+  }
+  .el-btn{
+    margin-top: 100px;
+    margin-left: 500px;
+    justify-content: center;
+    align-items: center;
   }
 </style>
