@@ -45,6 +45,11 @@ const router = new Router({
           path: '/goodsAdd',
           name: 'goodsAdd',
           component: () => import('@/components/goodsList/goodsAdd/GoodsAdd')
+        },
+        {
+          path: '/orders',
+          name: 'orders',
+          component: () => import('@/components/order/OrderList')
         }
       ]
     }
