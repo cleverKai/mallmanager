@@ -124,7 +124,7 @@ export default {
         goodsNum: 0
       },
       // 当前商品id
-      currGoodsId: 0 ,
+      currGoodsId: 0,
       loading: true
     }
   },

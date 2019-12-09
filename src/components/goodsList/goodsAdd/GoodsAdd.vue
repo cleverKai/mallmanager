@@ -236,15 +236,36 @@ export default {
       })
     },
     // 点击添加商品按钮
-    async addGoods () {
+    addGoods () {
       // 发送请求之前,处理this.form里面未处理的数据
       // goods_cat
       this.form.goods_cat = this.selectedOptions.join(',')
       // pics [{pic:路径}]
+      // 动态参数
+      // attr [{attr_id:?,attr_value:?}]
+      let arr1 = this.arrDyParams.map((item) => {
+        return {attr_id: item.attr_id, attr_value: item.attr_vals}
+      })
+      // 静态参数
+      // attr [{attr_id:?,attr_value:?}]
+      let arr2 = this.staticDyParams.map((item) => {
+        return {attr_id: item.attr_id, attr_value: item.attr_vals}
+      })
 
-      const res = await this.$http.post('/goods/', this.form)
+      // 将动态参数和静态参数数组进行合并
+      this.form.attrs = [...arr1, ...arr2]
 
-      console.log(res)
+      this.$http.post('/goods/', this.form).then((res) => {
+        console.log(res)
+        if (res.data.meta.status === 201) {
+          // 提示
+          this.$message.success(res.data.meta.msg)
+          // 跳转
+          this.$router.push({name: 'goods'})
+        } else {
+          this.$message.warning(res.data.meta.msg)
+        }
+      })
     }
   }
 }
