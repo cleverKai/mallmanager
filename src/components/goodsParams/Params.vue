@@ -43,7 +43,7 @@
                 <template slot-scope="scope">
                   <el-row>
                     <el-button @click="showEditDyParamsDia(scope.row)"  plain size="mini" type="primary" icon="el-icon-edit" round >编辑</el-button>
-                    <el-button plain size="mini" type="danger" icon="el-icon-delete" round>删除</el-button>
+                    <el-button @click="deleteDyParams(scope.row.cat_id,scope.row.attr_id)" plain size="mini" type="danger" icon="el-icon-delete" round>删除</el-button>
                   </el-row>
                 </template>
               </el-table-column>
@@ -247,6 +247,32 @@ export default {
       } else {
         this.$message.warning(meta.msg)
       }
+    },
+    // 删除动态参数
+    deleteDyParams(cate_id,attr_id){
+      this.$confirm('此操作将永久删除该动态参数, 是否继续?', '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning',
+        center: true
+      }).then(async () => {
+        const res = await this.$http.delete('/categories/'+ cate_id +'/attributes/' + attr_id)
+        if(res.data.meta.status === 200){
+          this.$message({
+            type: 'success',
+            message: '删除成功!'
+          });
+          //更新视图
+          this.getDyParamsData()
+        } else {
+          this.message.error(res.data.meta.msg)
+        }
+      }).catch(() => {
+        this.$message({
+          type: 'info',
+          message: '已取消删除'
+        });
+      });
     }
   }
 }
