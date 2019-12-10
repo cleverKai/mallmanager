@@ -241,6 +241,7 @@ export default {
         this.$message.success(meta.msg)
         // 关闭对话框
         this.dialogFormVisibleParamsAdd = false
+        this.newDyParamsName = ''
         // 更新视图
         this.getDyParamsData()
       } else {
