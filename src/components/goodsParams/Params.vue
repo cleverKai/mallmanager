@@ -74,7 +74,7 @@
 <!--                操作组件-->
                 <template slot-scope="scope">
                       <el-row>
-                        <el-button plain size="mini" type="primary" icon="el-icon-edit" round>编辑</el-button>
+                        <el-button @click="showEditStaticParams(scope.row)" plain size="mini" type="primary" icon="el-icon-edit" round>编辑</el-button>
                         <el-button plain size="mini" type="danger" icon="el-icon-delete" round>删除</el-button>
                       </el-row>
                 </template>
@@ -104,6 +104,18 @@
           <div slot="footer" class="dialog-footer">
             <el-button style="margin-right: 20px;" @click="dialogFormVisibleParamsAdd = false">取 消</el-button>
             <el-button type="primary" @click="addDyParams">确 定</el-button>
+          </div>
+        </el-dialog>
+        <!--        编辑静态属性对话框-->
+        <el-dialog title="修改静态属性" width="30%" :visible.sync="dialogFormVisibleStaticParamsEdit">
+          <el-form   ref="ruleForm" class="demo-ruleForm">
+            <el-form-item label="静态属性" label-width="80px">
+              <el-input v-model="currStaticParamsName"></el-input>
+            </el-form-item>
+          </el-form>
+          <div slot="footer" class="dialog-footer">
+            <el-button style="margin-right: 20px;" @click="dialogFormVisibleStaticParamsEdit = false">取 消</el-button>
+            <el-button type="primary" @click="editStaticParams">确 定</el-button>
           </div>
         </el-dialog>
       </el-card>
@@ -142,7 +154,14 @@ export default {
       // 新添加动态参数
       newDyParamsName:'',
       // 添加动态参数对话框相关属性
-      dialogFormVisibleParamsAdd: false
+      dialogFormVisibleParamsAdd: false,
+      // 静态参数属性
+      dialogFormVisibleStaticParamsEdit:false,
+      //当前静态属性名称
+      currStaticParamsName: '',
+      // 当前静态属性分类id和和属性id
+      currStaticCateId:-1,
+      currStaticParamsId:-1
     }
   },
   components:{
@@ -273,6 +292,29 @@ export default {
           message: '已取消删除'
         });
       });
+    },
+    // 点击静态参数编辑按钮，弹出对话框
+    showEditStaticParams(staticParams){
+      this.dialogFormVisibleStaticParamsEdit = true
+      this.currStaticParamsName = staticParams.attr_name
+      this.currStaticCateId = staticParams.cat_id
+      this.currStaticParamsId = staticParams.attr_id
+    },
+    // 参数修改过后，点击确定按钮，发送网络请求
+   async editStaticParams(){
+      const  res = await this.$http.put('/categories/'+ this.currStaticCateId+'/attributes/'+
+      this.currStaticParamsId, {attr_name:this.currStaticParamsName,attr_sel:'only'})
+      let {data, meta} = res.data
+      if(meta.status === 200){
+        // 关闭对话框
+        this.dialogFormVisibleStaticParamsEdit = false
+        // 提示
+        this.$message.success(meta.msg)
+        // 刷新视图
+        this.getStaticParamsData()
+      } else {
+        this.$message.error(meta.status)
+      }
     }
   }
 }
