@@ -25,6 +25,34 @@
               border
               style="width: 100%;margin-top: 20px">
               <el-table-column
+                type="expand"
+                align="center"
+                width="80">
+                <!--                每行展开的容器-->
+                <template slot-scope="scope">
+                      <el-tag
+                        v-if="scope.row.attr_vals !== ''"
+                        :key="tag"
+                        v-for="tag in (scope.row.attr_vals).split(' ')"
+                        closable
+                        :disable-transitions="false"
+                        @close="handleClose(tag)">
+                        {{tag}}
+                      </el-tag>
+                      <el-input
+                        class="input-new-tag"
+                        v-if="inputVisible"
+                        v-model="inputValue"
+                        ref="saveTagInput"
+                        size="small"
+                        @keyup.enter.native="handleInputDyParamsConfirm(scope.row)"
+                        @blur="handleInputDyParamsConfirm(scope.row)"
+                      >
+                      </el-input>
+                      <el-button v-if="!inputVisible" class="button-new-tag" size="small" @click="showInput(scope.row)">+ New Tag</el-button>
+                </template>
+              </el-table-column>
+              <el-table-column
                 label="#"
                 type="index"
                 align="center"
@@ -56,6 +84,34 @@
               :data="staticParamsData"
               border
               style="width: 100%;margin-top: 20px">
+              <el-table-column
+                type="expand"
+                align="center"
+                width="80">
+<!--                每行展开的容器-->
+                <template slot-scope="scope">
+                    <el-tag
+                      v-if="scope.row.attr_vals !== ''"
+                      :key="tag"
+                      v-for="tag in (scope.row.attr_vals).split(' ')"
+                      closable
+                      :disable-transitions="false"
+                      @close="handleClose(tag)">
+                      {{tag}}
+                    </el-tag>
+                    <el-input
+                      class="input-new-tag"
+                      v-if="inputVisible"
+                      v-model="inputValue"
+                      ref="saveTagInput"
+                      size="small"
+                      @keyup.enter.native="handleInputDyParamsConfirm(scope.row)"
+                      @blur="handleInputDyParamsConfirm"
+                    >
+                    </el-input>
+                    <el-button v-else class="button-new-tag" size="small" @click="showInput(scope.row)">+ New Tag</el-button>
+                </template>
+              </el-table-column>
               <el-table-column
                 label="#"
                 type="index"
@@ -177,7 +233,11 @@ export default {
       //添加静态属性相关属性
       dialogFormVisibleStaticParamsAdd:false,
       // 新添加的静态属性
-      newStaticParamsName: ''
+      newStaticParamsName: '',
+      // 当前动态参数值
+      currAttrVal:[],
+      inputVisible: false,
+      inputValue: ''
     }
   },
   components:{
@@ -382,7 +442,46 @@ export default {
           message: '已取消删除'
         });
       });
-    }
+    },
+    handleClose(tag) {
+      this.dynamicTags.splice(this.dynamicTags.indexOf(tag), 1);
+    },
+
+    showInput(dyParams) {
+      if(dyParams.attr_id === this.currParamsId){
+        this.inputVisible = true;
+        this.$nextTick(_ => {
+          this.$refs.saveTagInput.$refs.input.focus();
+        });
+      }
+    },
+    // 点击enter键或者鼠标失去焦点时触发，修改动态分类参数
+    async handleInputDyParamsConfirm(dyParams) {
+      this.inputVisible = false
+      if(this.inputValue !== ''){
+        const res = await this.$http.put('/categories/' + dyParams.cat_id + '/attributes/' + dyParams.attr_id,
+          {
+            attr_name: dyParams.attr_name,
+            attr_sel: 'many',
+            attr_vals: dyParams.attr_vals?dyParams.attr_vals+ ' ' +this.inputValue:this.inputValue
+          })
+        if (res.data.meta.status === 200) {
+          //提示
+          this.$message.success('修改参数项成功')
+          //  刷新视图
+          dyParams.attr_vals = res.data.data.attr_vals
+          this.inputVisible = false
+          this.inputValue = ''
+        } else {
+          this.$message.error('修改参数项失败')
+        }
+      }
+    },
+    // 失去焦点，触发修改动态参数
+    // handleInputDyParamsConfirm(dyParams){
+    //
+    //   this.handleInputDyParamsConfirm(dyParams)
+    // }
   }
 }
 </script>
@@ -390,5 +489,20 @@ export default {
 <style scoped lang="css">
 .card{
   margin-top: 20px;
+}
+.el-tag + .el-tag {
+  margin-left: 10px;
+}
+.button-new-tag {
+  margin-left: 10px;
+  height: 32px;
+  line-height: 30px;
+  padding-top: 0;
+  padding-bottom: 0;
+}
+.input-new-tag {
+  width: 90px;
+  margin-left: 10px;
+  vertical-align: bottom;
 }
 </style>
