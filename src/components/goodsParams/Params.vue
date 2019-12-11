@@ -50,7 +50,7 @@
             </el-table>
           </el-tab-pane>
           <el-tab-pane label="静态属性" name="2">
-            <el-button :disabled="isDisable" style="margin-top: 10px" size="mini" type="primary">添加属性</el-button>
+            <el-button :disabled="isDisable" @click="showAddStaticParams" style="margin-top: 10px" size="mini" type="primary">添加属性</el-button>
 
             <el-table
               :data="staticParamsData"
@@ -75,7 +75,7 @@
                 <template slot-scope="scope">
                       <el-row>
                         <el-button @click="showEditStaticParams(scope.row)" plain size="mini" type="primary" icon="el-icon-edit" round>编辑</el-button>
-                        <el-button plain size="mini" type="danger" icon="el-icon-delete" round>删除</el-button>
+                        <el-button @click="deleteStaticParams(scope.row.cat_id,scope.row.attr_id)" plain size="mini" type="danger" icon="el-icon-delete" round>删除</el-button>
                       </el-row>
                 </template>
               </el-table-column>
@@ -86,7 +86,7 @@
         <el-dialog title="修改动态参数" width="30%" :visible.sync="dialogFormVisibleParamsEdit">
           <el-form   ref="ruleForm" class="demo-ruleForm">
             <el-form-item label="动态参数" label-width="80px">
-              <el-input v-model="currDyParamsName"></el-input>
+              <el-input v-model="currDyParamsName" ></el-input>
             </el-form-item>
           </el-form>
           <div slot="footer" class="dialog-footer">
@@ -98,7 +98,7 @@
         <el-dialog title="添加动态参数" width="30%" :visible.sync="dialogFormVisibleParamsAdd">
           <el-form   ref="ruleForm" class="demo-ruleForm">
             <el-form-item label="动态参数" label-width="80px">
-              <el-input v-model="newDyParamsName"></el-input>
+              <el-input v-model="newDyParamsName" placeholder="请输入要添加的动态参数名称"></el-input>
             </el-form-item>
           </el-form>
           <div slot="footer" class="dialog-footer">
@@ -116,6 +116,18 @@
           <div slot="footer" class="dialog-footer">
             <el-button style="margin-right: 20px;" @click="dialogFormVisibleStaticParamsEdit = false">取 消</el-button>
             <el-button type="primary" @click="editStaticParams">确 定</el-button>
+          </div>
+        </el-dialog>
+        <!--        添加参数对话框-->
+        <el-dialog title="添加静态属性" width="30%" :visible.sync="dialogFormVisibleStaticParamsAdd">
+          <el-form   ref="ruleForm" class="demo-ruleForm">
+            <el-form-item label="静态属性" label-width="80px">
+              <el-input v-model="newStaticParamsName" placeholder="请输入要添加的静态属性名称"></el-input>
+            </el-form-item>
+          </el-form>
+          <div slot="footer" class="dialog-footer">
+            <el-button style="margin-right: 20px;" @click="dialogFormVisibleStaticParamsAdd = false">取 消</el-button>
+            <el-button type="primary" @click="addStaticParams">确 定</el-button>
           </div>
         </el-dialog>
       </el-card>
@@ -161,7 +173,11 @@ export default {
       currStaticParamsName: '',
       // 当前静态属性分类id和和属性id
       currStaticCateId:-1,
-      currStaticParamsId:-1
+      currStaticParamsId:-1,
+      //添加静态属性相关属性
+      dialogFormVisibleStaticParamsAdd:false,
+      // 新添加的静态属性
+      newStaticParamsName: ''
     }
   },
   components:{
@@ -308,13 +324,64 @@ export default {
       if(meta.status === 200){
         // 关闭对话框
         this.dialogFormVisibleStaticParamsEdit = false
+        // 清空
+        this.newStaticParamsName = ''
         // 提示
         this.$message.success(meta.msg)
         // 刷新视图
         this.getStaticParamsData()
       } else {
-        this.$message.error(meta.status)
+        this.$message.warning(meta.status)
       }
+    },
+    // 点击添加静态属性按钮 打开对话框
+    showAddStaticParams(){
+      this.dialogFormVisibleStaticParamsAdd = true
+    },
+    // 点击添加静态属性对话框确定按钮，发送请求
+    addStaticParams(){
+      this.$http.post('/categories/'+ this.staticParamsData[0].cat_id  +'/attributes/',
+        {
+          attr_name: this.newStaticParamsName,
+          attr_sel:'only',
+          attr_vals: this.selectedOptions.join(',')
+         }).then((res) =>{
+         if(res.data.meta.status === 201){
+           // 关闭对话框
+           this.dialogFormVisibleStaticParamsAdd = false
+           //提示
+           this.$message.success(res.data.meta.msg)
+           // 更新视图
+           this.getStaticParamsData()
+         } else {
+           this.$message.warning(res.data.meta.msg)
+         }
+      })
+    },
+    // 删除静态属性
+    deleteStaticParams(cat_id,attr_id){
+      this.$confirm('此操作将永久删除该静态属性, 是否继续?', '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning',
+        center: true
+      }).then( async () => {
+        const  res = await this.$http.delete('/categories/'+ cat_id + "/attributes/" + attr_id)
+        const { msg, status } = res.data.meta
+        if(status === 200){
+          this.$message({
+            type: 'success',
+            message: msg
+          });
+          this.getStaticParamsData()
+        }
+
+      }).catch(() => {
+        this.$message({
+          type: 'info',
+          message: '已取消删除'
+        });
+      });
     }
   }
 }
