@@ -36,7 +36,7 @@
                         v-for="tag in (scope.row.attr_vals).split(' ')"
                         closable
                         :disable-transitions="false"
-                        @close="handleClose(scope.row,tag)">
+                        @close="handleDyParamsClose(scope.row,tag)">
                         {{tag}}
                       </el-tag>
                       <el-input
@@ -96,7 +96,7 @@
                       v-for="tag in (scope.row.attr_vals).split(' ')"
                       closable
                       :disable-transitions="false"
-                      @close="handleClose(tag)">
+                      @close="handleStaticParamsClose(scope.row,tag)">
                       {{tag}}
                     </el-tag>
                     <el-input
@@ -444,7 +444,7 @@ export default {
       });
     },
     //编辑标签x按钮，删除动态参数标签
-    handleClose(dyParams,tag) {
+    handleDyParamsClose(dyParams,tag) {
      let attr_vals =  dyParams.attr_vals.split(tag)[0].replace(/(^\s*)|(\s*$)/g, "")
       this.$http.put('/categories/' + dyParams.cat_id +'/attributes/' + dyParams.attr_id,
         {
@@ -464,7 +464,27 @@ export default {
         }
       })
     },
-
+    // 删除静态属性标签
+    handleStaticParamsClose(staticParams,tag){
+      let attr_vals =  staticParams.attr_vals.split(tag)[0].replace(/(^\s*)|(\s*$)/g, "")
+      this.$http.put('/categories/' + staticParams.cat_id +'/attributes/' + staticParams.attr_id,
+        {
+          attr_name: staticParams.attr_name,
+          attr_sel:'only',
+          attr_vals:attr_vals
+        }).then((res) =>{
+        console.log(res)
+        const { data , meta } = res.data
+        if(meta.status === 200){
+          // 提示
+          this.$message.success('参数修改成功!')
+          // 刷新视图
+          staticParams.attr_vals = data.attr_vals
+        } else {
+          this.$message.warning('参数修改失败')
+        }
+      })
+    },
     showInput() {
         this.inputVisible = true;
         this.$nextTick(_ => {
