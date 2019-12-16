@@ -36,7 +36,7 @@
                         v-for="tag in (scope.row.attr_vals).split(' ')"
                         closable
                         :disable-transitions="false"
-                        @close="handleClose(tag)">
+                        @close="handleClose(scope.row,tag)">
                         {{tag}}
                       </el-tag>
                       <el-input
@@ -49,7 +49,7 @@
                         @blur="handleInputDyParamsConfirm(scope.row)"
                       >
                       </el-input>
-                      <el-button v-if="!inputVisible" class="button-new-tag" size="small" @click="showInput(scope.row)">+ New Tag</el-button>
+                      <el-button v-else class="button-new-tag" size="small" @click="showInput">+ New Tag</el-button>
                 </template>
               </el-table-column>
               <el-table-column
@@ -106,10 +106,10 @@
                       ref="saveTagInput"
                       size="small"
                       @keyup.enter.native="handleInputDyParamsConfirm(scope.row)"
-                      @blur="handleInputDyParamsConfirm"
+                      @blur="handleInputDyParamsConfirm(scope.row)"
                     >
                     </el-input>
-                    <el-button v-else class="button-new-tag" size="small" @click="showInput(scope.row)">+ New Tag</el-button>
+                    <el-button v-else class="button-new-tag" size="small" @click="showInput()">+ New Tag</el-button>
                 </template>
               </el-table-column>
               <el-table-column
@@ -443,22 +443,38 @@ export default {
         });
       });
     },
-    handleClose(tag) {
-      this.dynamicTags.splice(this.dynamicTags.indexOf(tag), 1);
+    //编辑标签x按钮，删除动态参数标签
+    handleClose(dyParams,tag) {
+     let attr_vals =  dyParams.attr_vals.split(tag)[0].replace(/(^\s*)|(\s*$)/g, "")
+      this.$http.put('/categories/' + dyParams.cat_id +'/attributes/' + dyParams.attr_id,
+        {
+          attr_name: dyParams.attr_name,
+          attr_sel:'many',
+          attr_vals:attr_vals
+        }).then((res) =>{
+        console.log(res)
+        const { data , meta } = res.data
+        if(meta.status === 200){
+          // 提示
+          this.$message.success('参数修改成功!')
+          // 刷新视图
+          dyParams.attr_vals = data.attr_vals
+        } else {
+          this.$message.warning('参数修改失败')
+        }
+      })
     },
 
-    showInput(dyParams) {
-      if(dyParams.attr_id === this.currParamsId){
+    showInput() {
         this.inputVisible = true;
         this.$nextTick(_ => {
           this.$refs.saveTagInput.$refs.input.focus();
         });
-      }
     },
     // 点击enter键或者鼠标失去焦点时触发，修改动态分类参数
     async handleInputDyParamsConfirm(dyParams) {
-      this.inputVisible = false
-      if(this.inputValue !== ''){
+      let inputValue = this.inputValue
+      if(inputValue){
         const res = await this.$http.put('/categories/' + dyParams.cat_id + '/attributes/' + dyParams.attr_id,
           {
             attr_name: dyParams.attr_name,
@@ -475,6 +491,8 @@ export default {
         } else {
           this.$message.error('修改参数项失败')
         }
+      } else {
+        this.inputVisible = false
       }
     },
     // 失去焦点，触发修改动态参数

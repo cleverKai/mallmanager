@@ -187,7 +187,7 @@ export default {
               this.arrDyParams = res.data.data
               // this.arrDyParams每个对象.attr_vals 字符串转为数组
               this.arrDyParams.forEach((item) => {
-                item.attr_vals = item.attr_vals.length === 0 ? [] : item.attr_vals.split(',')
+                item.attr_vals = item.attr_vals.length === 0 ? [] : item.attr_vals.split(' ')
               })
             }
           })
