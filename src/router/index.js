@@ -55,6 +55,11 @@ const router = new Router({
           path: '/params',
           name: 'params' ,
           component: () => import('@/components/goodsParams/Params')
+        },
+        {
+          path: '/categories',
+          name: 'categories',
+          component: () => import('@/components/goodsCategory/GoodsCategory')
         }
       ]
     }
