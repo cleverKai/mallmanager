@@ -9,6 +9,7 @@
          <el-table
            :data="cateData"
            border
+           height="450px"
            style="width: 100%;margin-top: 20px;">
            <el-table-column
              type="index"
@@ -61,8 +62,8 @@
              label="操作">
              <template slot-scope="scope">
                <el-row>
-                 <el-button plain size="mini"  type="primary" icon="el-icon-edit" circle></el-button>
-                 <el-button plain size="mini"  type="danger" icon="el-icon-delete" circle></el-button>
+                 <el-button plain size="mini" @click="showEditGoodsCate(scope.row)" type="primary" icon="el-icon-edit" circle></el-button>
+                 <el-button plain size="mini" @click="deleteGoodsCate(scope.row.cat_id)"  type="danger" icon="el-icon-delete" circle></el-button>
                </el-row>
              </template>
            </el-table-column>
@@ -101,6 +102,19 @@
              <el-button type="primary" @click="addCategory">确 定</el-button>
            </div>
          </el-dialog>
+<!--         2.编辑商品分类对话框-->
+         <el-dialog width="25%" title="编辑分类" :visible.sync="dialogFormVisibleEditCate">
+           <el-form >
+             <el-form-item label="分类名称" label-width="70px">
+               <el-input v-model="currCateName" autocomplete="off"></el-input>
+             </el-form-item>
+           </el-form>
+           <div slot="footer" class="dialog-footer">
+             <el-button @click="dialogFormVisibleEditCate = false">取 消</el-button>
+             <el-button type="primary" @click="editGoodsCate">确 定</el-button>
+           </div>
+         </el-dialog>
+
        </el-card>
     </div>
 </template>
@@ -139,7 +153,13 @@
         // 添加分类级别
         cat_level:-1,
         // 添加分类父级id
-        cat_pid:-1
+        cat_pid:-1,
+        // 编辑商品分类属性
+        dialogFormVisibleEditCate:false,
+        // 当前分类名称
+        currCateName:'',
+        // 当前分类id
+        currCateId:-1
       }
     },
     mounted() {
@@ -211,6 +231,47 @@
           this.cat_level = 2
         }
         this.cat_pid = val[val.length-1]
+      },
+      // 点击编辑按钮，打开对话框
+      showEditGoodsCate(cate){
+        this.dialogFormVisibleEditCate = true
+        this.currCateName = cate.cat_name
+        this.currCateId = cate.cat_id
+      },
+      // 点击对话框确定按钮，发送请求
+      async editGoodsCate(){
+        const  res = await this.$http.put('/categories/' + this.currCateId ,{cat_name:this.currCateName} )
+        if(res.data.meta.status === 200){
+          this.dialogFormVisibleEditCate = false
+          this.$message.success(res.data.meta.msg)
+          this.getCategoriesData()
+        } else {
+          this.dialogFormVisibleEditCate = false
+          this.$message.warning('更新失败')
+        }
+      },
+      //删除分类
+      deleteGoodsCate(cat_id){
+        this.$confirm('此操作将永久删除该商品分类, 是否继续?', '提示', {
+          confirmButtonText: '确定',
+          cancelButtonText: '取消',
+          type: 'warning',
+          center: true
+        }).then( async () => {
+          let res = await this.$http.delete('/categories/' + cat_id)
+          if(res.data.meta.status === 200){
+            this.getCategoriesData()
+            this.$message({
+              type: 'success',
+              message: '删除成功!'
+            })
+          }
+        }).catch(() => {
+          this.$message({
+            type: 'info',
+            message: '已取消删除'
+          });
+        });
       }
     }
   }
