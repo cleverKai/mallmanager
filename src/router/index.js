@@ -1,6 +1,7 @@
 import Vue from 'vue'
 import Router from 'vue-router'
 import Login from '../components/login/Login'
+// eslint-disable-next-line standard/object-curly-even-spacing
 import { Message} from 'element-ui'
 Vue.use(Router)
 
@@ -34,6 +35,31 @@ const router = new Router({
           path: '/roles',
           name: 'roles',
           component: () => import('@/components/rights/Role')
+        },
+        {
+          path: '/goods',
+          name: 'goods',
+          component: () => import('@/components/goodsList/GoodsList')
+        },
+        {
+          path: '/goodsAdd',
+          name: 'goodsAdd',
+          component: () => import('@/components/goodsList/goodsAdd/GoodsAdd')
+        },
+        {
+          path: '/orders',
+          name: 'orders',
+          component: () => import('@/components/order/OrderList')
+        },
+        {
+          path: '/params',
+          name: 'params' ,
+          component: () => import('@/components/goodsParams/Params')
+        },
+        {
+          path: '/categories',
+          name: 'categories',
+          component: () => import('@/components/goodsCategory/GoodsCategory')
         }
       ]
     }
