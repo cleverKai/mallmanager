@@ -6,7 +6,7 @@
       <!--  搜索-->
       <el-row class="searchRow">
         <el-col>
-          <el-input @clear="loadOrderList"  clearable placeholder="请输入订单编号" @keyup.enter.native="searchOrder" v-model="orders" class="inputSearch">
+          <el-input  clearable placeholder="请输入订单编号" @keyup.enter.native="searchOrder" v-model="orders" class="inputSearch">
             <el-button   @click="searchOrder" slot="append" icon="el-icon-search"></el-button>
           </el-input>
         </el-col>
@@ -16,6 +16,7 @@
         :data="orderList"
         stripe
         border
+        height="400px"
         style="width: 100%;margin-top: 30px">
         <el-table-column
           type="index"
@@ -24,13 +25,13 @@
           width="80">
         </el-table-column>
         <el-table-column
-          prop="name"
+          prop="order_number"
           label="订单编号"
           align="center"
-          width="100">
+          width="250">
         </el-table-column>
         <el-table-column
-          prop="address"
+          prop="order_price"
           align="center"
           label="订单价格">
         </el-table-column>
@@ -38,9 +39,13 @@
         prop="address"
         align="center"
         label="是否付款">
+          <template slot-scope="scope">
+            <span v-if="scope.row.pay_status === '0'"><el-tag type="danger">未付款</el-tag></span>
+            <span v-else ><el-tag type="success">已付款</el-tag></span>
+          </template>
        </el-table-column>
         <el-table-column
-          prop="address"
+          prop="is_send"
           align="center"
           label="是否发货">
         </el-table-column>
@@ -48,13 +53,70 @@
           prop="address"
           align="center"
           label="下单时间">
+          <template slot-scope="scope">
+            {{scope.row.create_time | fmtDate}}
+          </template>
         </el-table-column>
         <el-table-column
           prop="address"
           align="center"
           label="操作">
+          <template slot-scope="scope">
+             <el-row>
+               <el-button type="primary" plain size="mini" icon="el-icon-edit" circle></el-button>
+               <el-button type="success" @click="showOrderDetail(scope.row)" plain size="mini" icon="el-icon-check" circle></el-button>
+             </el-row>
+          </template>
         </el-table-column>
       </el-table>
+<!--      &#45;&#45;      4.分页&ndash;&gt;-->
+      <el-pagination
+        @size-change="handleSizeChange"
+        @current-change="handleCurrentChange"
+        :current-page="pageNum"
+        :page-sizes="[5, 10, 15]"
+        :page-size="5"
+        layout="total, sizes, prev, pager, next, jumper"
+        :total="total">
+      </el-pagination>
+<!--      订单详情对话框-->
+      <el-dialog title="订单详情" :visible.sync="dialogVisibleOrderDetail" width="30%">
+      <el-form :model="orderDetailData">
+        <el-form-item label="订单编号:" label-width="80px">
+          {{orderDetailData.order_number}}
+        </el-form-item>
+        <el-form-item label="订单价格:" label-width="80px">
+          {{orderDetailData.order_price}}
+        </el-form-item>
+        <el-form-item label="支付状态:" label-width="80px">
+          <span v-if="orderDetailData.pay_status === '0'">未付款</span>
+          <span v-else>已付款</span>
+        </el-form-item>
+        <el-form-item label="发货状态:" label-width="80px">
+          {{orderDetailData.is_send}}
+        </el-form-item>
+        <el-form-item label="订单发票:" label-width="80px">
+          {{orderDetailData.order_fapiao_title}}
+        </el-form-item>
+        <el-form-item label="公司名称:" label-width="80px">
+          <span v-if="orderDetailData.order_fapiao_company === ''">暂无</span>
+          <span v-else>{{ orderDetailData.order_fapiao_company }}</span>
+        </el-form-item>
+        <el-form-item label="发票内容:" label-width="80px">
+          <span v-if="orderDetailData.order_fapiao_content === ''">暂无</span>
+          <span v-else>{{ orderDetailData.order_fapiao_content }}</span>
+        </el-form-item>
+        <el-form-item label="发票内容:" label-width="80px">
+          <span v-if="orderDetailData.consignee_addr === ''">暂无</span>
+          <span v-else>{{ orderDetailData.consignee_addr }}</span>
+        </el-form-item>
+
+        <span slot="footer" class="dialog-footer">;
+        <el-button @click="dialogVisibleOrderDetail = false">取 消</el-button>
+        <el-button type="primary" @click="dialogVisibleOrderDetail = false">确 定</el-button>
+      </span>
+      </el-form>
+      </el-dialog>
     </el-card>
   </div>
 </template>
@@ -75,7 +137,11 @@ export default {
       pageNum: 1,
       // 一页展示数量
       pageSize: 5,
-      query: '',
+      // 订单总数
+      total:-1,
+      // 订单详情对话框
+      dialogVisibleOrderDetail:false,
+      orderDetailData:{}
     }
   },
   // 当页面一挂载完毕，发送网络请求
@@ -84,17 +150,44 @@ export default {
   },
   methods:{
     async getOrderList(){
-      const res = await this.$http.get('/orders?query=' + this.query + '&pagenum=' +this.pageNum
+      const res = await this.$http.get('/orders?query=' + this.orders +  '&pagenum=' +this.pageNum
         +'&pagesize=' + this.pageSize)
-      console.log(res)
+      const { data , meta} = res.data
+      if(meta.status === 200){
+        this.orderList = data.goods
+        this.total = data.total
+      } else {
+        this.$message.success('订单数据获取失败!')
+      }
+    },
+    // 改变每页数据量
+    handleSizeChange(val){
+      this.pageSize  = val
+      this.pageNum = 1
+      this.getOrderList()
+    },
+    handleCurrentChange(val){
+      this.pageNum = val
+      this.getOrderList()
     },
     searchOrder(){
-
+      if(this.orders === ''){
+        this.$message.warning('请输入要查询的订单编号')
+      } else {
+        this.getOrderList()
+      }
+    },
+    // 查看用户订单详情
+    showOrderDetail(order){
+      this.dialogVisibleOrderDetail = true
+        this.$http.get('/orders/' + order.order_id).then((res)=>{
+          const { data, meta } = res.data
+          if(meta.status === 200){
+            this.orderDetailData = data
+          }
+        })
     },
     //  清空搜索框
-    loadOrderList(){
-
-    }
   }
 }
 </script>
