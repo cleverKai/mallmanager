@@ -60,6 +60,11 @@ const router = new Router({
           path: '/categories',
           name: 'categories',
           component: () => import('@/components/goodsCategory/GoodsCategory')
+        },
+        {
+          path: '/reports',
+          name: 'reports',
+          component: () => import('@/components/reports/Reports')
         }
       ]
     }
