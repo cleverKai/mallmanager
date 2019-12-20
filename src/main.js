@@ -16,7 +16,7 @@ Vue.use(myHttpServer)
 // eslint-disable-next-line no-new
 // 全局过滤器 -- 处理时间格式
 Vue.filter('fmtDate', function (v) {
-  return moment(v).format('YYYY-MM-DD')
+  return moment(v).format('YYYY-MM-DD HH:mm:ss')
 })
 // eslint-disable-next-line no-new
 new Vue({
