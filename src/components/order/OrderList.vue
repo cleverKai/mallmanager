@@ -63,7 +63,7 @@
           label="操作">
           <template slot-scope="scope">
              <el-row>
-               <el-button type="primary" plain size="mini" icon="el-icon-edit" circle></el-button>
+               <el-button type="primary" @click="showOrderEditDia" plain size="mini" icon="el-icon-edit" circle></el-button>
                <el-button type="success" @click="showOrderDetail(scope.row)" plain size="mini" icon="el-icon-check" circle></el-button>
              </el-row>
           </template>
@@ -106,7 +106,7 @@
           <span v-if="orderDetailData.order_fapiao_content === ''">暂无</span>
           <span v-else>{{ orderDetailData.order_fapiao_content }}</span>
         </el-form-item>
-        <el-form-item label="发票内容:" label-width="80px">
+        <el-form-item label="发货地址:" label-width="80px">
           <span v-if="orderDetailData.consignee_addr === ''">暂无</span>
           <span v-else>{{ orderDetailData.consignee_addr }}</span>
         </el-form-item>
@@ -117,12 +117,34 @@
       </span>
       </el-form>
       </el-dialog>
+<!--      修改订单地址对话框-->
+      <el-dialog width="35%" title="修改订单地址" :visible.sync="dialogFormVisibleEditOrderAddr">
+        <el-form >
+          <el-form-item label="活动名称" label-width="70px">
+            <el-cascader
+              expandTrigger = "hover"
+              v-model="selectedOptions"
+              clearable
+              :options="options"
+              :props="defaultProp"
+              @change="handleChange"></el-cascader>
+          </el-form-item>
+          <el-form-item label="详细地址" label-width="70px">
+            <el-input v-model="Address" autocomplete="off"></el-input>
+          </el-form-item>
+        </el-form>
+        <div slot="footer" class="dialog-footer">
+          <el-button @click="dialogFormVisibleEditOrderAddr = false">取 消</el-button>
+          <el-button type="primary" @click="dialogFormVisibleEditOrderAddr = false">确 定</el-button>
+        </div>
+      </el-dialog>
     </el-card>
   </div>
 </template>
 
 <script>
 import MyBread from '../cuscom/myBread'
+import cityList from  '@/assets/city_data2017_element.js'
 export default {
   name: 'OrderList',
   components: {
@@ -141,7 +163,13 @@ export default {
       total:-1,
       // 订单详情对话框
       dialogVisibleOrderDetail:false,
-      orderDetailData:{}
+      orderDetailData:{},
+      // 修改订单地址相关属性
+      dialogFormVisibleEditOrderAddr:false,
+      // 详细地址
+      Address:'',
+      selectedOptions:[],
+      options:[]
     }
   },
   // 当页面一挂载完毕，发送网络请求
@@ -181,13 +209,19 @@ export default {
     showOrderDetail(order){
       this.dialogVisibleOrderDetail = true
         this.$http.get('/orders/' + order.order_id).then((res)=>{
+          console.log(res)
           const { data, meta } = res.data
           if(meta.status === 200){
             this.orderDetailData = data
           }
         })
     },
-    //  清空搜索框
+    //  打开修改订单地址对话框
+    showOrderEditDia(){
+      this.dialogFormVisibleEditOrderAddr = true
+      this.options = cityList
+    }
+
   }
 }
 </script>
