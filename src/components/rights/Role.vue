@@ -224,7 +224,7 @@ export default {
           // 重新赋值roleList
           this.roleList = res.data.data
           // // 更新视图
-          // this.getRoleList()
+          this.getRoleList()
           this.$message({
             type: 'success',
             message: res.data.meta.msg
