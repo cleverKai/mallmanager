@@ -10,7 +10,7 @@
 
 <script>
  import MyBread from '../cuscom/myBread'
- var echarts = require('echarts');
+ let eCharts = require('echarts');
  export default {
    name: "Reports",
    components:{
@@ -22,7 +22,7 @@
    methods:{
     async useEchart(){
        // 基于准备好的dom，初始化echarts实例
-       let myChart = echarts.init(document.getElementById('main'));
+       let myChart = eCharts.init(document.getElementById('main'));
        // 获取图表数据
        const  res = await this.$http.get('/reports/type/1')
        console.log(res)

@@ -120,14 +120,13 @@
 <!--      修改订单地址对话框-->
       <el-dialog width="35%" title="修改订单地址" :visible.sync="dialogFormVisibleEditOrderAddr">
         <el-form >
-          <el-form-item label="活动名称" label-width="70px">
+          <el-form-item label="收获地址" label-width="70px">
             <el-cascader
               expandTrigger = "hover"
               v-model="selectedOptions"
               clearable
               :options="options"
-              :props="defaultProp"
-              @change="handleChange"></el-cascader>
+              ></el-cascader>
           </el-form-item>
           <el-form-item label="详细地址" label-width="70px">
             <el-input v-model="Address" autocomplete="off"></el-input>
