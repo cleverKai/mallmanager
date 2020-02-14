@@ -242,8 +242,11 @@ export default {
     },
     // 搜索用户信息
     searchUser () {
-      console.log('user')
-      this.getUserList()
+      if(this.user == ''){
+        this.$message.warning("请输入用户名")
+      } else {
+        this.getUserList()
+      }
     },
     // 清空输入框， 重新加载用户数据
     loadUserList () {
